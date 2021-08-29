@@ -4,8 +4,8 @@
     <!-- user card UserProfileCard.vue -->
     <UserProfileCard
       :user="user"
-      @after-delete-Following="handleAfterDeleteFollowing"
-      @after-add-Following="handleAfterAddFollowing"
+      @after-delete-following="handleAfterDeleteFollowing"
+      @after-add-following="handleAfterAddFollowing"
     />
 
     <div class="row">

@@ -78,11 +78,11 @@ export default {
     },
     deleteFollowing() {
       //todo向後端發送api
-      this.$emit("after-delete-Following");
+      this.$emit("after-delete-following");
     },
     addFollowing() {
       //todo向後端發送api
-      this.$emit("after-add-Following");
+      this.$emit("after-add-following");
     },
   },
 };
