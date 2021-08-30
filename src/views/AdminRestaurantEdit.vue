@@ -37,7 +37,26 @@ export default {
   methods: {
     fetchRestaurant() {
       this.$store.dispatch("fetchRestaurant");
-      this.restaurant = this.$store.state.Restaurant.restaurant;
+      const {
+        id,
+        name,
+        CategoryId: categoryId,
+        tel,
+        address,
+        description,
+        image,
+        opening_hours: openingHours,
+      } = this.$store.state.Restaurant.restaurant;
+      this.restaurant = {
+        id,
+        name,
+        categoryId,
+        tel,
+        address,
+        description,
+        image,
+        openingHours,
+      };
     },
     handleAfterSubmit(formData) {
       //todo發送給後端

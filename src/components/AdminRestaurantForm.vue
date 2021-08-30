@@ -24,11 +24,11 @@
       >
         <option value="" selected disabled>--請選擇--</option>
         <option
-          :value="categorie.id"
-          v-for="categorie in categories"
-          :key="categorie.id"
+          :value="category.id"
+          v-for="category in categories"
+          :key="category.id"
         >
-          {{ categorie.name }}
+          {{ category.name }}
         </option>
       </select>
     </div>
