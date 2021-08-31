@@ -8,6 +8,7 @@ import {
   CurrentUser,
   RestaurantsTop,
   RestaurantDashboardData,
+  Users,
   User,
   AdminRestaurants,
   AdminRestaurant,
@@ -46,6 +47,9 @@ const store = new Vuex.Store({
     fetchRestaurantDashboardData(context) {
       context.commit('mutationfetchRestaurantDashboardData', RestaurantDashboardData)
     },
+    fetchUsers(context) {
+      context.commit('mutationfetchUsers', Users)
+    },
     fetchUser(context) {
       context.commit('mutationfetchUser', User)
     },
@@ -80,6 +84,9 @@ const store = new Vuex.Store({
     },
     mutationfetchRestaurantDashboardData(state, RestaurantDashboardData) {
       state.RestaurantDashboardData = RestaurantDashboardData
+    },
+    mutationfetchUsers(state, Users) {
+      state.Users = Users
     },
     mutationfetchUser(state, User) {
       state.User = User
