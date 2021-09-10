@@ -16,6 +16,7 @@
     </div>
     <!-- 餐廳分頁 -->
     <RestaurantsPagination
+      v-if="totalPage.length > 1"
       :page="page"
       :totalPage="totalPage"
       :prev="prev"
@@ -30,6 +31,8 @@ import NavTabs from "../components/NavTabs.vue";
 import RestaurantCard from "../components/RestaurantCard.vue";
 import NavPills from "../components/NavPills.vue";
 import RestaurantsPagination from "../components/RestaurantsPagination.vue";
+import restaurantsAPI from "../apis/restaurants";
+import { Toast } from "../utils/helpers";
 
 export default {
   name: "restaurants",
@@ -52,19 +55,50 @@ export default {
   },
   created() {
     //fetch API
-    this.$store.dispatch("fetchRestaurants");
+    // this.$store.dispatch("fetchRestaurants");
+    const { page = "", categoryId = "" } = this.$route.query;
+    this.fetchRestaurants({ queryPage: page, queryCategoryId: categoryId });
+  },
+  methods: {
+    async fetchRestaurants({ queryPage, queryCategoryId }) {
+      try {
+        const { data, statusText } = await restaurantsAPI.getRestaurants({
+          page: queryPage,
+          categoryId: queryCategoryId,
+        });
+        if (statusText !== "OK")
+          throw new Error("無法取得餐廳資料，稍後再嘗試");
+        const {
+          restaurants,
+          categories,
+          categoryId,
+          page,
+          totalPage,
+          prev,
+          next,
+        } = data;
 
-    const { restaurants, categories, categoryId, page, totalPage, prev, next } =
-      this.$store.state.Restaurants;
-    [
-      this.restaurants,
-      this.categories,
-      this.categoryId,
-      this.page,
-      this.totalPage,
-      this.prev,
-      this.next,
-    ] = [restaurants, categories, categoryId, page, totalPage, prev, next];
+        [
+          this.restaurants,
+          this.categories,
+          this.categoryId,
+          this.page,
+          this.totalPage,
+          this.prev,
+          this.next,
+        ] = [restaurants, categories, categoryId, page, totalPage, prev, next];
+      } catch (err) {
+        Toast.fire({
+          icon: "error",
+          title: err,
+        });
+      }
+    },
+  },
+  beforeRouteUpdate(to, from, next) {
+    const { page = "", categoryId = "" } = to.query;
+    this.fetchRestaurants({ queryPage: page, queryCategoryId: categoryId });
+    next();
   },
 };
 </script>

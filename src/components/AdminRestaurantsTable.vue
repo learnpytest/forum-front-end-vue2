@@ -23,7 +23,10 @@
           >
 
           <router-link
-            :to="{ name: 'admin-restaurant-edit', params: restaurant.id }"
+            :to="{
+              name: 'admin-restaurant-edit',
+              params: { id: restaurant.id },
+            }"
             class="btn btn-link"
             >Edit</router-link
           >
@@ -42,6 +45,9 @@
 </template>
 
 <script>
+import adminAPI from "../apis/admin";
+import { Toast } from "../utils/helpers";
+
 export default {
   name: "AdminRestaurantsTable",
   data() {
@@ -54,14 +60,27 @@ export default {
     this.fetchAdminRestaurants();
   },
   methods: {
-    fetchAdminRestaurants() {
+    async fetchAdminRestaurants() {
       //fetch api
-      this.$store.dispatch("fetchAdminRestaurants");
-      this.restaurants = this.$store.state.AdminRestaurants.restaurants;
+      // this.$store.dispatch("fetchAdminRestaurants");
+      // this.restaurants = this.$store.state.AdminRestaurants.restaurants;
+      try {
+        const { data, statusText } = await adminAPI.restaurants.get();
+        if (statusText !== "OK") throw new Error(data.message);
+        this.restaurants = data.restaurants;
+      } catch (err) {
+        Toast.fire({ icon: "warning", title: "無法取得餐廳列表" });
+      }
     },
-    deleteRestaurant(id) {
+    async deleteRestaurant(id) {
       //todo向後端刪除資料
-      this.restaurants = this.restaurants.filter((rest) => rest.id !== id);
+      try {
+        const { data, statusText } = await adminAPI.restaurants.delete({ id });
+        if (statusText !== "OK") throw new Error(data.message);
+        this.restaurants = this.restaurants.filter((rest) => rest.id !== id);
+      } catch (err) {
+        Toast.fire({ icon: "error", title: "無法刪除餐廳" });
+      }
     },
   },
 };

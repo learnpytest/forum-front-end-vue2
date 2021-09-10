@@ -1,5 +1,5 @@
 <template>
-  <form @submit.stop.prevent="handleSumbit">
+  <form @submit.stop.prevent="handleSumbit" v-show="!isLoading">
     <div class="form-group">
       <label for="name">Name</label>
       <input
@@ -101,10 +101,15 @@
       />
     </div>
 
-    <button type="submit" class="btn btn-primary mt-3">送出</button>
+    <button type="submit" class="btn btn-primary mt-3" :disabled="isProcessing">
+      {{ isProcessing ? "處理中" : "送出" }}
+    </button>
   </form>
 </template>
 <script>
+import adminAPI from "../apis/admin";
+import { Toast } from "../utils/helpers";
+
 export default {
   name: "AdminRestaurantForm",
   props: {
@@ -122,6 +127,10 @@ export default {
         };
       },
     },
+    isProcessing: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -129,16 +138,31 @@ export default {
         ...this.initialRestaurant,
       },
       categories: [],
+      isLoading: true,
     };
   },
   created() {
     this.fetchCategories();
   },
+  watch: {
+    initialRestaurant(newValue) {
+      this.restaurant = { ...this.restaurant, ...newValue };
+    },
+  },
   methods: {
-    fetchCategories() {
+    async fetchCategories() {
       //fetch api
-      this.$store.dispatch("fetchCategories");
-      this.categories = this.$store.state.Categories.categories;
+      // this.$store.dispatch("fetchCategories");
+      // this.categories = this.$store.state.Categories.categories;
+      try {
+        const { data, statusText } = await adminAPI.categories.get();
+        if (statusText !== "OK") throw new Error("無法取得餐廳類別");
+        this.categories = data.categories;
+        this.isLoading = false;
+      } catch (err) {
+        this.isLoading = false;
+        Toast.fire({ icon: "error", title: err });
+      }
     },
     handleFileChange(e) {
       const files = e.target.files;
@@ -150,6 +174,13 @@ export default {
       this.restaurant.image = imgUrl;
     },
     handleSumbit(e) {
+      if (!this.restaurant.name) {
+        Toast.fire({ icon: "warning", title: "餐廳名稱必填" });
+        return;
+      } else if (!this.restaurant.categoryId) {
+        Toast.fire({ icon: "warning", title: "餐廳類別必填" });
+        return;
+      }
       const form = e.target;
       const formData = new FormData(form);
       this.$emit("after-submit", formData);

@@ -20,6 +20,8 @@
 import NavTabs from "../components/NavTabs.vue";
 import NewestRestaurants from "../components/NewestRestaurants.vue";
 import NewestComments from "../components/NewestComments.vue";
+import restaurantsFeedsAPI from "../apis/restaurantsFeeds";
+import { Toast } from "../utils/helpers";
 
 const filterComments = function (comments) {
   return comments.filter((comment) => comment.Restaurant && comment.text);
@@ -40,10 +42,25 @@ export default {
   },
   created() {
     //fetch API
-    this.$store.dispatch("mutationFetchRestaurantsFeeds");
-    const { restaurants, comments } = this.$store.state.restaurantsFeeds;
-    this.restaurants = restaurants;
-    this.comments = filterComments(comments);
+    // this.$store.dispatch("mutationFetchRestaurantsFeeds");
+    // const { restaurants, comments } = this.$store.state.restaurantsFeeds;
+    // this.restaurants = restaurants;
+    // this.comments = filterComments(comments);
+    this.fetchFeeds();
+  },
+  methods: {
+    async fetchFeeds() {
+      try {
+        const { data, statusText } = await restaurantsFeedsAPI.getFeeds();
+        if (statusText !== "OK")
+          throw new Error("無法取得最新資料，稍後再嘗試");
+        const { restaurants, comments } = data;
+        this.restaurants = restaurants;
+        this.comments = filterComments(comments);
+      } catch (err) {
+        Toast.fire({ icon: "error", title: err });
+      }
+    },
   },
 };
 </script>

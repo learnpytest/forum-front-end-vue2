@@ -63,7 +63,11 @@
         />
       </div>
 
-      <button class="btn btn-lg btn-primary btn-block mb-3" type="submit">
+      <button
+        class="btn btn-lg btn-primary btn-block mb-3"
+        type="submit"
+        :disabled="isProcessing"
+      >
         Submit
       </button>
 
@@ -78,6 +82,9 @@
   </div>
 </template>
 <script>
+import authorizationAPI from "../apis/authorizationAPI";
+import { Toast } from "../utils/helpers";
+
 export default {
   data() {
     return {
@@ -85,18 +92,56 @@ export default {
       email: "",
       password: "",
       passwordCheck: "",
+      isProcessing: false,
     };
   },
   methods: {
-    handleSubmit() {
-      console.log(
-        JSON.stringify({
+    async handleSubmit() {
+      // console.log(
+      //   JSON.stringify({
+      //     name: this.name,
+      //     email: this.email,
+      //     password: this.password,
+      //     passwordCheck: this.passwordCheck,
+      //   })
+      // );
+      try {
+        if (
+          !this.name ||
+          !this.email ||
+          !this.password ||
+          !this.passwordCheck
+        ) {
+          Toast.fire({
+            icon: "warning",
+            title: "請填入完整資料",
+          });
+          return;
+        } else if (this.password !== this.passwordCheck) {
+          Toast.fire({
+            icon: "warning",
+            title: "密碼不一致請重新輸入",
+          });
+          return;
+        }
+        this.isProcessing = true;
+        const { data } = await authorizationAPI.signUp({
           name: this.name,
           email: this.email,
           password: this.password,
           passwordCheck: this.passwordCheck,
-        })
-      );
+        });
+        if (data.status !== "success") throw new Error("無法註冊");
+        Toast.fire({ icon: "success", title: "註冊成功，請使用帳號密碼登入" });
+        this.$router.push({ name: "sign-in" });
+      } catch (err) {
+        this.password = "";
+        this.passwordCheck = "";
+        Toast.fire({
+          icon: "error",
+          title: err,
+        });
+      }
     },
   },
 };

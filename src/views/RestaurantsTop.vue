@@ -20,6 +20,8 @@
 <script>
 import NavTabs from "../components/NavTabs.vue";
 import RestaurantTopCard from "../components/RestaurantTopCard.vue";
+import restaurantsTopAPI from "../apis/restaurantsTop";
+import { Toast } from "../utils/helpers";
 
 export default {
   name: "restaurants-top",
@@ -37,10 +39,18 @@ export default {
     this.fetchRestaurantsTop();
   },
   methods: {
-    fetchRestaurantsTop() {
+    async fetchRestaurantsTop() {
       //fetch api restaurants top
-      this.$store.dispatch("fetchRestaurantsTop");
-      this.restaurantsTop = this.$store.state.RestaurantsTop.restaurants;
+      try {
+        const { data, statusText } =
+          await restaurantsTopAPI.getRestaurantsTop();
+        if (statusText !== "OK") throw new Error("無法取得人氣餐廳");
+        this.restaurantsTop = [...data.restaurants];
+      } catch (err) {
+        Toast.fire({ icon: "error", title: err });
+      }
+      // this.$store.dispatch("fetchRestaurantsTop");
+      // this.restaurantsTop = this.$store.state.RestaurantsTop.restaurants;
     },
     afterDeleteFavorite(restaurantId) {
       this.restaurantsTop = this.restaurantsTop.map((rest) =>

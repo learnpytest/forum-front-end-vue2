@@ -43,6 +43,8 @@
 
 <script>
 import { mixinEmptyImage } from "../utils/mixins";
+import adminAPI from "../apis/admin";
+import { Toast } from "../utils/helpers";
 
 export default {
   name: "AdminRestaurant",
@@ -63,33 +65,46 @@ export default {
   },
   created() {
     //fetch api
-    this.fetchAdminRestaurant();
+    const { id } = this.$route.params;
+    this.fetchAdminRestaurant(id);
+  },
+  beforeRouteUpdate(to, from, next) {
+    const { id } = to.params;
+    this.fetchAdminRestaurant(id);
+    next();
   },
   methods: {
-    fetchAdminRestaurant() {
+    async fetchAdminRestaurant(restaurantId) {
       //fetch api
-      this.$store.dispatch("fetchAdminRestaurant");
-      const {
-        id,
-        name,
-        Category,
-        image,
-        opening_hours: openingHours,
-        tel,
-        address,
-        description,
-      } = this.$store.state.AdminRestaurant.restaurant;
-      this.restaurant = {
-        ...this.restaurant,
-        id,
-        name,
-        categoryName: Category ? Category.name : "未分類",
-        image,
-        openingHours,
-        tel,
-        address,
-        description,
-      };
+      try {
+        const { data, statusText } = await adminAPI.restaurants.getDetail({
+          restaurantId,
+        });
+        if (statusText !== "OK") throw new Error("無法讀取餐廳資料");
+        const {
+          id,
+          name,
+          Category,
+          image,
+          opening_hours: openingHours,
+          tel,
+          address,
+          description,
+        } = data.restaurant;
+        this.restaurant = {
+          ...this.restaurant,
+          id,
+          name,
+          categoryName: Category ? Category.name : "未分類",
+          image,
+          openingHours,
+          tel,
+          address,
+          description,
+        };
+      } catch (err) {
+        Toast.fire({ icon: "error", title: err });
+      }
     },
   },
 };
