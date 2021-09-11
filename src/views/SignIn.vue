@@ -66,12 +66,6 @@ export default {
   },
   methods: {
     async handleSubmit() {
-      // console.log(
-      //   JSON.stringify({
-      //     email: this.email,
-      //     password: this.password,
-      //   })
-      // );
       //via authorizationAPI
       try {
         if (!this.email || !this.password) {
@@ -88,6 +82,9 @@ export default {
         });
         if (data.status !== "success") throw new Error(data.message);
         localStorage.setItem("token", data.token);
+        //將currentUser存入vuex
+        this.$store.commit("setCurrentUser", data.user);
+
         this.$router.push("/restaurants");
       } catch (err) {
         this.isProcessing = false;

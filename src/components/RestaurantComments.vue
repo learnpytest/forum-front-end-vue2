@@ -37,22 +37,17 @@ export default {
       type: Array,
       required: true,
     },
+    currentUser: {
+      type: Object,
+      required: true,
+    },
+    isAuthenticated: {
+      type: Boolean,
+      required: true,
+    },
   },
   mixins: [mixinFromNowFilters],
-  data() {
-    return {
-      currentUser: {},
-    };
-  },
-  created() {
-    this.fetchCurrentUser();
-  },
   methods: {
-    fetchCurrentUser() {
-      //fetch API
-      this.$store.dispatch("fetchCurrentUser");
-      this.currentUser = this.$store.state.currentUser;
-    },
     handleDeleteButtonClick(commentId) {
       //通知後端刪除
       this.$emit("after-delete-comment", commentId);

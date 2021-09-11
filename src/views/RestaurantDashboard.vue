@@ -20,6 +20,9 @@
   </div>
 </template>
 <script>
+import restaurantsAPI from "../apis/restaurants";
+import { Toast } from "../utils/helpers";
+
 export default {
   name: "RestaurantDashboard",
   data() {
@@ -39,19 +42,31 @@ export default {
     this.fetchRestaurantDashboardData(restaurantId);
   },
   methods: {
-    fetchRestaurantDashboardData() {
-      this.$store.dispatch("fetchRestaurantDashboardData");
-      const { id, name, Category, Comments, viewCounts } =
-        this.$store.state.RestaurantDashboardData.restaurant;
+    async fetchRestaurantDashboardData(restaurantId) {
+      // this.$store.dispatch("fetchRestaurantDashboardData");
+      try {
+        const { data, statusText } = await restaurantsAPI.getRestaurant({
+          restaurantId,
+        });
+        if (statusText !== "OK")
+          throw new Error("無法取得餐廳資料，稍後再嘗試");
+        const { id, name, viewCounts, Category, Comments } = data.restaurant;
+        console.log("data", data);
 
-      this.restaurant = {
-        ...this.restaurant,
-        id,
-        name,
-        commentsLength: Comments.length,
-        viewCounts,
-        categoryName: Category ? Category.name : "未分類",
-      };
+        this.restaurant = {
+          ...this.restaurant,
+          id,
+          name,
+          viewCounts,
+          categoryName: Category ? Category.name : "未分類",
+          commentsLength: Comments.length,
+        };
+      } catch (err) {
+        Toast.fire({
+          icon: "error",
+          title: err,
+        });
+      }
     },
   },
 };

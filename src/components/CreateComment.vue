@@ -13,7 +13,8 @@
   </form>
 </template>
 <script>
-import { v4 as uuidv4 } from "uuid";
+import commentsAPI from "../apis/comments";
+import { Toast } from "../utils/helpers";
 
 export default {
   name: "CreateComment",
@@ -29,14 +30,24 @@ export default {
     };
   },
   methods: {
-    handleSubmit() {
-      //todo向後端更新資料
-      this.$emit("after-create-comment", {
-        id: uuidv4(),
+    async handleSubmit() {
+      const payload = {
         text: this.text,
-        RestaurantId: this.restaurantId,
-        createdAt: new Date(),
-      });
+        restaurantId: this.restaurantId,
+      };
+      try {
+        const { statusText } = await commentsAPI.comments.create({
+          formData: payload,
+        });
+        if (statusText !== "OK") throw new Error("無法新增評論");
+        this.$emit("after-create-comment");
+      } catch (err) {
+        Toast.fire({
+          icon: "error",
+          title: err,
+        });
+      }
+
       this.text = "";
     },
   },

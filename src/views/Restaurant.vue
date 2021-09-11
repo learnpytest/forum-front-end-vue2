@@ -1,11 +1,19 @@
 <template>
   <div class="container py-5">
     <!-- Restaurant's detail RestaurantDetail.vue -->
-    <RestaurantDetail :initial-restaurant="restaurant" />
+    <RestaurantDetail
+      :initial-restaurant="restaurant"
+      @after-add-like="afterAddLike"
+      @after-remove-like="afterRemoveLike"
+      @after-add-favorite="afterAddFavorite"
+      @after-remove-favorite="afterRemoveFavorite"
+    />
     <!-- Restaurant's comments RestaurantComments.vue -->
     <RestaurantComments
       :restaurant-comments="restaurantComments"
       @after-delete-comment="afterDeleteComment"
+      :currentUser="currentUser"
+      :isAuthenticated="isAuthenticated"
     />
     <!-- Create comment for the Restaurant -->
     <CreateComment
@@ -19,6 +27,10 @@
 import RestaurantDetail from "../components/RestaurantDetail.vue";
 import RestaurantComments from "../components/RestaurantComments.vue";
 import CreateComment from "../components/CreateComment.vue";
+import restaurantsAPI from "../apis/restaurants";
+import commentsAPI from "../apis/comments";
+import { Toast } from "../utils/helpers";
+import { mapState } from "vuex";
 
 export default {
   name: "Restaurant",
@@ -42,59 +54,91 @@ export default {
         isLiked: false,
       },
       restaurantComments: [],
-      currentUser: {},
     };
+  },
+  computed: {
+    ...mapState(["currentUser", "isAuthenticated"]),
   },
   created() {
     //fetch API
     const { id: restaurantId } = this.$route.params;
     this.fetchRestaurantData(restaurantId);
   },
+  beforeRouteUpdate(to, from, next) {
+    const { id: restaurantId } = to.params;
+    this.fetchRestaurantData(restaurantId);
+    next();
+  },
   methods: {
-    fetchRestaurantData() {
-      this.$store.dispatch("fetchRestaurant");
-      const { restaurant, isFavorited, isLiked } = this.$store.state.Restaurant;
-      const {
-        id,
-        name,
-        Category,
-        image,
-        openingHours,
-        tel,
-        address,
-        description,
-        Comments,
-      } = restaurant;
-      this.restaurant = {
-        id,
-        name,
-        categoryName: Category ? Category.name : "未分類",
-        image,
-        openingHours,
-        tel,
-        address,
-        description,
-        isFavorited,
-        isLiked,
-      };
-      this.restaurantComments = Comments;
+    afterAddFavorite() {
+      this.restaurant = { ...this.restaurant, isFavorited: true };
     },
-    afterDeleteComment(commentId) {
-      this.restaurantComments = this.restaurantComments.filter(
-        (comment) => comment.id !== commentId
-      );
+    afterRemoveFavorite() {
+      this.restaurant = { ...this.restaurant, isFavorited: false };
     },
-    afterCreateComment(payload) {
-      //fetch API currentUser
-      this.$store.dispatch("fetchCurrentUser");
-      this.currentUser = this.$store.state.currentUser;
-      this.restaurantComments.push({
-        ...payload,
-        User: {
-          id: this.currentUser.id,
-          name: this.currentUser.name,
-        },
-      });
+    afterAddLike() {
+      this.restaurant = { ...this.restaurant, isLiked: true };
+    },
+    afterRemoveLike() {
+      this.restaurant = { ...this.restaurant, isLiked: false };
+    },
+    async fetchRestaurantData(restaurantId) {
+      try {
+        const { data, statusText } = await restaurantsAPI.getRestaurant({
+          restaurantId,
+        });
+        if (statusText !== "OK")
+          throw new Error("無法取得餐廳資料，稍後再嘗試");
+        const { restaurant, isFavorited, isLiked } = data;
+        const {
+          id,
+          name,
+          Category,
+          image,
+          openingHours,
+          tel,
+          address,
+          description,
+          Comments,
+        } = restaurant;
+        this.restaurant = {
+          id,
+          name,
+          categoryName: Category ? Category.name : "未分類",
+          image,
+          openingHours,
+          tel,
+          address,
+          description,
+          isFavorited,
+          isLiked,
+        };
+        this.restaurantComments = Comments;
+      } catch (err) {
+        Toast.fire({
+          icon: "error",
+          title: err,
+        });
+      }
+    },
+    async afterDeleteComment(commentId) {
+      try {
+        const { data } = await commentsAPI.comments.delete({ commentId });
+        if (data.status !== "success")
+          throw new Error("無法刪除評論資料，稍後再嘗試");
+        this.restaurantComments = this.restaurantComments.filter(
+          (comment) => comment.id !== commentId
+        );
+      } catch (err) {
+        Toast.fire({
+          icon: "error",
+          title: err,
+        });
+      }
+    },
+    afterCreateComment() {
+      const { id: restaurantId } = this.$route.params;
+      this.fetchRestaurantData(restaurantId);
     },
   },
 };

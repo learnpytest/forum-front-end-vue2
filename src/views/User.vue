@@ -72,7 +72,7 @@ export default {
   methods: {
     fetchUser() {
       //todo fetch api
-      this.$store.dispatch("fetchUser");
+      // this.$store.dispatch("fetchUser");
       const {
         id,
         name,
