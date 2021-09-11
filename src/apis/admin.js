@@ -13,8 +13,12 @@ export default {
         }
       })
     },
-    create(formData) {
-      return apiHelper.post('/admin/categories', formData, {
+    create({
+      name
+    }) {
+      return apiHelper.post('/admin/categories', {
+        name
+      }, {
         headers: {
           Authorization: `Bearer ${getToken()}`
         }
@@ -22,9 +26,11 @@ export default {
     },
     update({
       categoryId,
-      formData
+      name
     }) {
-      return apiHelper.put(`/admin/categories/${categoryId}`, formData, {
+      return apiHelper.put(`/admin/categories/${categoryId}`, {
+        name
+      }, {
         headers: {
           Authorization: `Bearer ${getToken()}`
         }

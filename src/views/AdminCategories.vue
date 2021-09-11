@@ -18,6 +18,7 @@
             type="button"
             class="btn btn-primary"
             @click.stop.prevent="createCategory"
+            :disabled="isProcessing"
           >
             新增
           </button>
@@ -105,6 +106,7 @@ export default {
     return {
       categories: [],
       newCategoryName: "",
+      isProcessing: false,
     };
   },
   created() {
@@ -131,20 +133,20 @@ export default {
     async createCategory() {
       //todo向後端新增類別取得類別id
       try {
+        if (!this.newCategoryName.trim().length) return;
+        this.isProcessing = true;
         const { data } = await adminAPI.categories.create({
           name: this.newCategoryName,
         });
-        if (data.status !== "success")
-          throw new Error("無法新增餐廳類別，稍後再嘗試");
-        this.categories.push({
-          id: data.categoryId,
-          name: this.newCategoryName,
-        });
+        if (data.status !== "success") throw new Error(data.message);
+        this.fetchCategories();
         this.newCategoryName = "";
+        this.isProcessing = false;
       } catch (err) {
+        this.isProcessing = false;
         Toast.fire({
           icon: "error",
-          title: err,
+          title: "無法新增餐廳類別，稍後再嘗試",
         });
       }
     },
@@ -154,15 +156,14 @@ export default {
         const { data } = await adminAPI.categories.delete({
           categoryId,
         });
-        if (data.status !== "success")
-          throw new Error("無法刪除餐廳類別，稍後再嘗試");
+        if (data.status !== "success") throw new Error(data.message);
         this.categories = this.categories.filter(
           (category) => category.id !== categoryId
         );
       } catch (err) {
         Toast.fire({
           icon: "error",
-          title: err,
+          title: "無法刪除餐廳類別，稍後再嘗試",
         });
       }
     },
@@ -180,17 +181,15 @@ export default {
     async updateCategory({ categoryId, name }) {
       //todo向後端修改資料
       try {
-        const formData = { categoryId, name };
         const { data } = await adminAPI.categories.update({
           categoryId,
-          formData,
+          name,
         });
-        if (data.status !== "success")
-          throw new Error("無法更新餐廳類別，稍後再嘗試");
+        if (data.status !== "success") throw new Error(data.message);
       } catch (err) {
         Toast.fire({
           icon: "error",
-          title: err,
+          title: "無法更新餐廳類別，稍後再嘗試",
         });
       }
       this.toggleEditing(categoryId);
