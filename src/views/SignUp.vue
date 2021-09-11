@@ -131,15 +131,16 @@ export default {
           password: this.password,
           passwordCheck: this.passwordCheck,
         });
-        if (data.status !== "success") throw new Error("無法註冊");
+        if (data.status !== "success") throw new Error(data.message);
         Toast.fire({ icon: "success", title: "註冊成功，請使用帳號密碼登入" });
         this.$router.push({ name: "sign-in" });
       } catch (err) {
         this.password = "";
         this.passwordCheck = "";
+        this.isProcessing = false;
         Toast.fire({
           icon: "error",
-          title: err,
+          title: "無法註冊",
         });
       }
     },
