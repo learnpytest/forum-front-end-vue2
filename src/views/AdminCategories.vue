@@ -93,7 +93,8 @@
 
 <script>
 import AdminNav from "../components/AdminNav.vue";
-import { v4 as uuidv4 } from "uuid";
+import adminAPI from "../apis/admin";
+import { Toast } from "../utils/helpers";
 
 export default {
   name: "AdminCategories",
@@ -110,28 +111,60 @@ export default {
     this.fetchCategories();
   },
   methods: {
-    fetchCategories() {
-      this.$store.dispatch("fetchCategories");
-      this.categories = this.$store.state.Categories.categories.map(
-        (category) => ({
+    async fetchCategories() {
+      try {
+        const { data, statusText } = await adminAPI.categories.get();
+        if (statusText !== "OK")
+          throw new Error("無法取得餐廳類別，稍後再嘗試");
+        this.categories = data.categories.map((category) => ({
           ...category,
           isEditing: false,
           nameCashed: "",
-        })
-      );
+        }));
+      } catch (err) {
+        Toast.fire({
+          icon: "error",
+          title: err,
+        });
+      }
     },
-    createCategory() {
+    async createCategory() {
       //todo向後端新增類別取得類別id
-      this.categories.push({
-        id: uuidv4(),
-        name: this.newCategoryName,
-      });
+      try {
+        const { data } = await adminAPI.categories.create({
+          name: this.newCategoryName,
+        });
+        if (data.status !== "success")
+          throw new Error("無法新增餐廳類別，稍後再嘗試");
+        this.categories.push({
+          id: data.categoryId,
+          name: this.newCategoryName,
+        });
+        this.newCategoryName = "";
+      } catch (err) {
+        Toast.fire({
+          icon: "error",
+          title: err,
+        });
+      }
     },
-    deleteCategory(categoryId) {
+    async deleteCategory(categoryId) {
       //todo向後端刪除類別確認刪除
-      this.categories = this.categories.filter(
-        (category) => category.id !== categoryId
-      );
+      try {
+        const { data } = await adminAPI.categories.delete({
+          categoryId,
+        });
+        if (data.status !== "success")
+          throw new Error("無法刪除餐廳類別，稍後再嘗試");
+        this.categories = this.categories.filter(
+          (category) => category.id !== categoryId
+        );
+      } catch (err) {
+        Toast.fire({
+          icon: "error",
+          title: err,
+        });
+      }
     },
     toggleEditing(categoryId) {
       this.categories = this.categories.map((category) => {
@@ -144,8 +177,22 @@ export default {
           : category;
       });
     },
-    updateCategory({ categoryId }) {
+    async updateCategory({ categoryId, name }) {
       //todo向後端修改資料
+      try {
+        const formData = { categoryId, name };
+        const { data } = await adminAPI.categories.update({
+          categoryId,
+          formData,
+        });
+        if (data.status !== "success")
+          throw new Error("無法更新餐廳類別，稍後再嘗試");
+      } catch (err) {
+        Toast.fire({
+          icon: "error",
+          title: err,
+        });
+      }
       this.toggleEditing(categoryId);
     },
     handleCancel(categoryId) {
