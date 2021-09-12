@@ -35,6 +35,9 @@ import UserFollowingsCard from "../components/UserFollowingsCard.vue";
 import UserFollowersCard from "../components/UserFollowersCard.vue";
 import UserCommentsCard from "../components/UserCommentsCard.vue";
 import UserFavoritedRestaurantsCard from "../components/UserFavoritedRestaurantsCard.vue";
+import usersAPI from "../apis/users";
+import { Toast } from "../utils/helpers";
+import { mapState } from "vuex";
 
 export default {
   name: "User",
@@ -65,49 +68,72 @@ export default {
       favoritedRestaurants: [],
     };
   },
+  computed: {
+    ...mapState(["currentUser", "isAuthenticated"]),
+  },
   created() {
     //todo fetch api
-    this.fetchUser();
+    const { id: userId } = this.$route.params;
+    this.fetchUser(userId);
+  },
+  beforeRouteUpdate(to, from, next) {
+    const { id: userId } = to.params;
+    this.fetchUser(userId);
+    next();
   },
   methods: {
-    fetchUser() {
+    async fetchUser(userId) {
       //todo fetch api
-      // this.$store.dispatch("fetchUser");
-      const {
-        id,
-        name,
-        email,
-        FavoritedRestaurants,
-        Comments,
-        Followers,
-        Followings,
-        image,
-      } = this.$store.state.User.profile;
-      const { isFollowed } = this.$store.state.User;
-      this.user = {
-        ...this.user,
-        id,
-        name,
-        email,
-        favoritedRestaurantsLength: FavoritedRestaurants
-          ? FavoritedRestaurants.length
-          : 0,
-        commentsLength: Comments ? Comments.length : 0,
-        followersCount: Followers ? Followers.length : 0,
-        followingsCount: Followings ? Followings.length : 0,
-        image,
-        isFollowed,
-      };
-      this.followers = Followers;
-      this.followings = Followings;
-      this.comments = Comments;
-      this.favoritedRestaurants = FavoritedRestaurants;
+      try {
+        const { data, statusText } = await usersAPI.getUser({ userId });
+        if (statusText !== "OK") throw new Error(statusText);
+        const {
+          id,
+          name,
+          email,
+          FavoritedRestaurants,
+          Comments,
+          Followers,
+          Followings,
+          image,
+        } = data.profile;
+        const { isFollowed } = data;
+        this.user = {
+          ...this.user,
+          id,
+          name,
+          email,
+          favoritedRestaurantsLength: FavoritedRestaurants
+            ? FavoritedRestaurants.length
+            : 0,
+          commentsLength: Comments ? Comments.length : 0,
+          followersCount: Followers ? Followers.length : 0,
+          followingsCount: Followings ? Followings.length : 0,
+          image,
+          isFollowed,
+        };
+        this.followers = Followers;
+        this.followings = Followings;
+        this.comments = Comments;
+        this.favoritedRestaurants = FavoritedRestaurants;
+      } catch (err) {
+        Toast.fire({
+          icon: "error",
+          title: "無法取得使用者資料",
+        });
+      }
     },
     handleAfterDeleteFollowing() {
       this.user.isFollowed = false;
+      this.followers = this.followers.filter(
+        (follower) => follower.id !== this.currentUser.id
+      );
+      this.user.followersCount = this.followers.length;
     },
     handleAfterAddFollowing() {
       this.user.isFollowed = true;
+      this.followers.push(this.currentUser);
+      this.user.followersCount = this.followers.length;
     },
   },
 };

@@ -3,9 +3,18 @@ import {
 } from "../utils/helpers"
 
 export default {
+  getUser({
+    userId
+  }) {
+    return apiHelper.get(`/users/${userId}`)
+  },
+  getTopUsers() {
+    return apiHelper.get('/users/top')
+  },
   getCurrentUser() {
     return apiHelper.get('/get_current_user')
   },
+
   addFavorite({
     restaurantId
   }) {
@@ -27,9 +36,7 @@ export default {
     return apiHelper.delete(`/like/${restaurantId}`)
 
   },
-  getTopUsers() {
-    return apiHelper.get('/users/top')
-  },
+
   addFollowing({
     userId
   }) {

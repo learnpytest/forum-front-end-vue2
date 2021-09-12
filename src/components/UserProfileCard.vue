@@ -34,7 +34,7 @@
               type="submit"
               class="btn btn-danger"
               v-else-if="user.isFollowed"
-              @click="deleteFollowing"
+              @click="deleteFollowing(user.id)"
             >
               取消追蹤
             </button>
@@ -42,7 +42,7 @@
               type="submit"
               class="btn btn-info"
               v-else
-              @click="addFollowing"
+              @click="addFollowing(user.id)"
             >
               追蹤
             </button>
@@ -53,6 +53,10 @@
   </div>
 </template>
 <script>
+import usersAPI from "../apis/users";
+import { Toast } from "../utils/helpers";
+import { mapState } from "vuex";
+
 export default {
   name: "UserProfileCard",
   props: {
@@ -61,28 +65,35 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      currentUser: {},
-    };
-  },
-  created() {
-    //todo fetch api
-    this.fetchCurrentUser();
+  computed: {
+    ...mapState(["currentUser", "isAuthenticated"]),
   },
   methods: {
-    fetchCurrentUser() {
-      //todo fetch api
-      this.$store.dispatch("fetchCurrentUser");
-      this.currentUser = this.$store.state.currentUser;
-    },
-    deleteFollowing() {
+    async deleteFollowing(userId) {
       //todo向後端發送api
-      this.$emit("after-delete-following");
+      try {
+        const { data } = await usersAPI.deleteFollowing({ userId });
+        if (data.status !== "success") throw new Error(data.message);
+        this.$emit("after-delete-following");
+      } catch (err) {
+        Toast.fire({
+          icon: "error",
+          title: "無法取消追蹤",
+        });
+      }
     },
-    addFollowing() {
+    async addFollowing(userId) {
       //todo向後端發送api
-      this.$emit("after-add-following");
+      try {
+        const { data } = await usersAPI.addFollowing({ userId });
+        if (data.status !== "success") throw new Error(data.message);
+        this.$emit("after-add-following");
+      } catch (err) {
+        Toast.fire({
+          icon: "error",
+          title: "無法加入追蹤",
+        });
+      }
     },
   },
 };

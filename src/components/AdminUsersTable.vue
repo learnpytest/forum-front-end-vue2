@@ -37,6 +37,9 @@
 </template>
 
 <script>
+import adminAPI from "../apis/admin";
+import { Toast } from "../utils/helpers";
+
 export default {
   name: "AdminUsersTable",
   data() {
@@ -48,8 +51,18 @@ export default {
     this.fetchUsers();
   },
   methods: {
-    fetchUsers() {
+    async fetchUsers() {
       //todo向後端取得users
+      try {
+        const { data, statusText } = await adminAPI.users.get();
+        if (statusText !== "OK") throw new Error(statusText);
+        this.users = [...data.users];
+      } catch (err) {
+        Toast.fire({
+          icon: "error",
+          title: "無法取得使用者資料",
+        });
+      }
       this.$store.dispatch("fetchUsers");
       this.users = this.$store.state.Users.users;
     },

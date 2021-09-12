@@ -152,8 +152,6 @@ export default {
   methods: {
     async fetchCategories() {
       //fetch api
-      // this.$store.dispatch("fetchCategories");
-      // this.categories = this.$store.state.Categories.categories;
       try {
         const { data, statusText } = await adminAPI.categories.get();
         if (statusText !== "OK") throw new Error("無法取得餐廳類別");
