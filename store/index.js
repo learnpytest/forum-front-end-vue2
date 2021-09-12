@@ -15,15 +15,23 @@ export default new Vuex.Store({
       image: '',
       isAdmin: false
     },
+    token: "",
     isAuthenticated: false
   },
   mutations: {
     setCurrentUser(state, currentUser) {
-      this.state.currentUser = {
-        ...this.state.currentUser,
+      state.currentUser = {
+        ...state.currentUser,
         ...currentUser
       }
-      this.state.isAuthenticated = true
+      state.token = localStorage.getItem('token')
+      state.isAuthenticated = true
+    },
+    revokeAuthentication(state) {
+      state.currentUser = {}
+      state.isAuthenticated = false
+      state.token = ""
+      localStorage.removeItem('token')
     }
   },
   actions: {
@@ -37,11 +45,15 @@ export default new Vuex.Store({
         } = await usersAPI.getCurrentUser()
         if (statusText !== 'OK') throw new Error('無法取得現在使用者')
         commit('setCurrentUser', data)
+        return true
       } catch (err) {
+
         Toast.fire({
           icon: 'error',
           title: err
         })
+        commit('revokeAuthentication')
+        return false
       }
 
     }

@@ -42,6 +42,7 @@
           <button
             type="button"
             class="btn btn-sm btn-outline-success my-2 my-sm-0"
+            @click.stop.prevent="logout"
           >
             登出
           </button>
@@ -58,6 +59,12 @@ export default {
   // Vue 會在沒有資料時使用此預設值
   computed: {
     ...mapState(["currentUser", "isAuthenticated"]),
+  },
+  methods: {
+    logout() {
+      this.$store.commit("revokeAuthentication");
+      this.$router.push({ name: "sign-in" });
+    },
   },
 };
 </script>
