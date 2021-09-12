@@ -2,17 +2,11 @@ import {
   apiHelper
 } from "../utils/helpers"
 
-const getToken = () => localStorage.getItem('token')
-
 export default {
   getRestaurant({
     restaurantId
   }) {
-    return apiHelper.get(`/restaurants/${restaurantId}`, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`
-      }
-    })
+    return apiHelper.get(`/restaurants/${restaurantId}`)
   },
   getRestaurants({
     page,
@@ -22,10 +16,6 @@ export default {
       page,
       categoryId
     })
-    return apiHelper.get(`/restaurants?${searchParams.toString()}`, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`
-      }
-    })
+    return apiHelper.get(`/restaurants?${searchParams.toString()}`)
   }
 }
