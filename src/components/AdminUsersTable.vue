@@ -17,18 +17,10 @@
           <button
             type="button"
             class="btn btn-link"
-            @click.stop.prevent="setRole(user.id)"
-            v-if="user.isAdmin"
+            @click.stop.prevent="setRole(user.id, user.isAdmin)"
+            v-if="currentUser.id !== user.id"
           >
-            set as user
-          </button>
-          <button
-            type="button"
-            class="btn btn-link"
-            @click.stop.prevent="setRole(user.id)"
-            v-if="!user.isAdmin"
-          >
-            set as admin
+            {{ user.isAdmin ? "set as user" : "set as admin" }}
           </button>
         </td>
       </tr>
@@ -39,6 +31,7 @@
 <script>
 import adminAPI from "../apis/admin";
 import { Toast } from "../utils/helpers";
+import { mapState } from "vuex";
 
 export default {
   name: "AdminUsersTable",
@@ -50,9 +43,15 @@ export default {
   created() {
     this.fetchUsers();
   },
+  computed: {
+    ...mapState(["currentUser"]),
+  },
+  beforeRouteUpdate() {
+    this.fetchUsers();
+  },
   methods: {
     async fetchUsers() {
-      //todo向後端取得users
+      //向後端取得users
       try {
         const { data, statusText } = await adminAPI.users.get();
         if (statusText !== "OK") throw new Error(statusText);
@@ -63,13 +62,21 @@ export default {
           title: "無法取得使用者資料",
         });
       }
-      this.$store.dispatch("fetchUsers");
-      this.users = this.$store.state.Users.users;
     },
-    setRole(userId) {
-      this.users = this.users.map((user) => {
-        return user.id === userId ? { ...user, isAdmin: !user.isAdmin } : user;
-      });
+    async setRole(userId, isAdmin) {
+      try {
+        const isAdminString = isAdmin ? "false" : "true";
+        const { data } = await adminAPI.users.update({
+          userId,
+          isAdmin: isAdminString,
+        });
+        if (data.status !== "success") throw new Error(data.message);
+        this.users = this.users.map((user) => {
+          return user.id === userId ? { ...user, isAdmin: !isAdmin } : user;
+        });
+      } catch (err) {
+        Toast.fire({ icon: "error", title: "無法更新使用者資料" });
+      }
     },
   },
 };
