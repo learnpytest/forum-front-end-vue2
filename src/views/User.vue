@@ -4,6 +4,8 @@
     <!-- user card UserProfileCard.vue -->
     <UserProfileCard
       :user="user"
+      :currentUser="currentUser"
+      :isAuthenticated="isAuthenticated"
       @after-delete-following="handleAfterDeleteFollowing"
       @after-add-following="handleAfterAddFollowing"
     />

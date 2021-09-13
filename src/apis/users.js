@@ -3,6 +3,12 @@ import {
 } from "../utils/helpers"
 
 export default {
+  editUser({
+    userId,
+    formData
+  }) {
+    return apiHelper.put(`/users/${userId}`, formData)
+  },
   getUser({
     userId
   }) {

@@ -64,10 +64,18 @@ export default {
       type: Object,
       required: true,
     },
+    currentUser: {
+      type: Object,
+      default: () => ({}),
+    },
+    isAuthenticated: {
+      type: Boolean,
+      required: true,
+    },
   },
-  computed: {
-    ...mapState(["currentUser", "isAuthenticated"]),
-  },
+  // computed: {
+  //   ...mapState(["currentUser", "isAuthenticated"]),
+  // },
   methods: {
     async deleteFollowing(userId) {
       //todo向後端發送api
