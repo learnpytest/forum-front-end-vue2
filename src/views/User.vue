@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-5">
+  <div class="container py-5" v-if="!isLoading">
     <NavTabs />
     <!-- user card UserProfileCard.vue -->
     <UserProfileCard
@@ -54,7 +54,7 @@ export default {
   data() {
     return {
       user: {
-        id: -1,
+        id: 0,
         name: "",
         email: "",
         favoritedRestaurantsLength: -1,
@@ -68,10 +68,11 @@ export default {
       followings: [],
       comments: [],
       favoritedRestaurants: [],
+      isLoading: true,
     };
   },
   computed: {
-    ...mapState(["currentUser", "isAuthenticated"]),
+    ...mapState(["currentUser", "isAuthenticated", "isProcessing"]),
   },
   created() {
     //todo fetch api
@@ -118,6 +119,7 @@ export default {
         this.followings = Followings;
         this.comments = Comments;
         this.favoritedRestaurants = FavoritedRestaurants;
+        this.isLoading = this.isProcessing;
       } catch (err) {
         Toast.fire({
           icon: "error",

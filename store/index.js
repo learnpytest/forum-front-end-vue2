@@ -9,14 +9,15 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     currentUser: {
-      id: -1,
+      id: 0,
       name: '',
       email: '',
       image: '',
       isAdmin: false
     },
     token: "",
-    isAuthenticated: false
+    isAuthenticated: false,
+    isProcessing: true
   },
   mutations: {
     setCurrentUser(state, currentUser) {
@@ -26,6 +27,7 @@ export default new Vuex.Store({
       }
       state.token = localStorage.getItem('token')
       state.isAuthenticated = true
+      state.isProcessing = false
     },
     revokeAuthentication(state) {
       state.currentUser = {}

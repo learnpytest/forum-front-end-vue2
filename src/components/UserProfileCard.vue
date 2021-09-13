@@ -55,7 +55,6 @@
 <script>
 import usersAPI from "../apis/users";
 import { Toast } from "../utils/helpers";
-import { mapState } from "vuex";
 
 export default {
   name: "UserProfileCard",
@@ -73,9 +72,6 @@ export default {
       required: true,
     },
   },
-  // computed: {
-  //   ...mapState(["currentUser", "isAuthenticated"]),
-  // },
   methods: {
     async deleteFollowing(userId) {
       //todo向後端發送api

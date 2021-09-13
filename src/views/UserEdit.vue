@@ -38,8 +38,9 @@
         type="submit"
         class="btn btn-primary mt-3"
         style="margin-right: 10px"
+        :disabled="isProcessing"
       >
-        Update
+        {{ isProcessing ? "處理中" : "Update" }}
       </button>
       <button type="button" class="btn btn-danger mt-3">Cancel</button>
     </form>
@@ -55,23 +56,34 @@ export default {
   data() {
     return {
       user: {
-        id: "-1",
+        id: 0,
         name: "",
         image: "",
       },
+      isProcessing: false,
     };
   },
   computed: {
     ...mapState(["currentUser", "isAuthenticated"]),
   },
   created() {
-    this.getUser();
+    this.syncUser();
   },
-  beforeRouteUpdate() {
-    this.getUser();
+  beforeRouteUpdate(to, from, next) {
+    if (this.currentUser.id !== to.params.id) {
+      this.$router.push("/404");
+      return;
+    }
+    this.syncUser();
+    next();
+  },
+  watch: {
+    currentUser() {
+      this.syncUser();
+    },
   },
   methods: {
-    getUser() {
+    syncUser() {
       this.user = {
         ...this.user,
         name: this.currentUser.name,
@@ -80,10 +92,9 @@ export default {
     },
     async handleSubmit(e) {
       try {
+        this.isProcessing = true;
         if (!this.user.name.trim()) throw new Error("名稱為必填");
         const formData = new FormData(e.target);
-        console.log(Number(this.$route.params.id) === this.currentUser.id);
-
         if (Number(this.$route.params.id) !== this.currentUser.id)
           throw new Error("沒有更新權限");
         const { data } = await usersAPI.editUser({
@@ -94,7 +105,7 @@ export default {
           throw new Error("無法更新使用者資料，稍後再嘗試");
         this.$router.push(`/users/${this.currentUser.id}`);
       } catch (err) {
-        console.log("err", err);
+        this.isProcessing = false;
         Toast.fire({
           icon: "error",
           title: err,
