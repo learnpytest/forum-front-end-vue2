@@ -1,33 +1,36 @@
 <template>
-  <div class="container py-5" v-if="!isLoading">
+  <div class="container py-5">
     <NavTabs />
+    <Spinner v-if="isLoading" />
     <!-- user card UserProfileCard.vue -->
-    <UserProfileCard
-      :user="user"
-      :currentUser="currentUser"
-      :isAuthenticated="isAuthenticated"
-      @after-delete-following="handleAfterDeleteFollowing"
-      @after-add-following="handleAfterAddFollowing"
-    />
+    <template v-else>
+      <UserProfileCard
+        :user="user"
+        :currentUser="currentUser"
+        :isAuthenticated="isAuthenticated"
+        @after-delete-following="handleAfterDeleteFollowing"
+        @after-add-following="handleAfterAddFollowing"
+      />
 
-    <div class="row">
-      <div class="col-md-4">
-        <!-- UserFollowingsCard.vue -->
-        <UserFollowingsCard :followings="followings" />
-        <br />
-        <!-- UserFollowersCard.vue -->
-        <UserFollowersCard :followers="followers" />
+      <div class="row">
+        <div class="col-md-4">
+          <!-- UserFollowingsCard.vue -->
+          <UserFollowingsCard :followings="followings" />
+          <br />
+          <!-- UserFollowersCard.vue -->
+          <UserFollowersCard :followers="followers" />
+        </div>
+        <div class="col-md-8">
+          <!-- UserCommentsCard.vue -->
+          <UserCommentsCard :comments="comments" />
+          <br />
+          <!-- UserFavoritedRestaurantsCard.vue -->
+          <UserFavoritedRestaurantsCard
+            :favoritedRestaurants="favoritedRestaurants"
+          />
+        </div>
       </div>
-      <div class="col-md-8">
-        <!-- UserCommentsCard.vue -->
-        <UserCommentsCard :comments="comments" />
-        <br />
-        <!-- UserFavoritedRestaurantsCard.vue -->
-        <UserFavoritedRestaurantsCard
-          :favoritedRestaurants="favoritedRestaurants"
-        />
-      </div>
-    </div>
+    </template>
   </div>
 </template>
 <script>
@@ -38,6 +41,8 @@ import UserFollowersCard from "../components/UserFollowersCard.vue";
 import UserCommentsCard from "../components/UserCommentsCard.vue";
 import UserFavoritedRestaurantsCard from "../components/UserFavoritedRestaurantsCard.vue";
 import usersAPI from "../apis/users";
+import Spinner from "../components/Spinner";
+
 import { Toast } from "../utils/helpers";
 import { mapState } from "vuex";
 
@@ -50,6 +55,7 @@ export default {
     UserFollowersCard,
     UserCommentsCard,
     UserFavoritedRestaurantsCard,
+    Spinner,
   },
   data() {
     return {
@@ -72,7 +78,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["currentUser", "isAuthenticated", "isProcessing"]),
+    ...mapState(["currentUser", "isAuthenticated"]),
   },
   created() {
     //todo fetch api
@@ -88,6 +94,7 @@ export default {
     async fetchUser(userId) {
       //todo fetch api
       try {
+        this.isLoading = true;
         const { data, statusText } = await usersAPI.getUser({ userId });
         if (statusText !== "OK") throw new Error(statusText);
         const {
@@ -119,8 +126,9 @@ export default {
         this.followings = Followings;
         this.comments = Comments;
         this.favoritedRestaurants = FavoritedRestaurants;
-        this.isLoading = this.isProcessing;
+        this.isLoading = false;
       } catch (err) {
+        this.isLoading = false;
         Toast.fire({
           icon: "error",
           title: "無法取得使用者資料",

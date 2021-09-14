@@ -2,7 +2,7 @@
   <nav aria-label="Page navigation example">
     <ul class="pagination">
       <!-- 前一頁 previousPage -->
-      <li :class="['page-item', { disabled: currentPage === 1 }]">
+      <li :class="['page-item', { disabled: page === 1 }]">
         <router-link
           class="page-link"
           aria-label="Previous"
