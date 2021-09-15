@@ -24,7 +24,42 @@ a:hover {
   vertical-align: middle;
 }
 
+.btn,
+.btn:focus,
 .page-link:focus,
+.form-control.focus {
+  box-shadow: none;
+  outline: none;
+}
+
+.form-control:focus {
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.btn,
+.btn-primary,
+.btn-info,
+.btn-danger,
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-info:hover,
+.btn-danger:hover {
+  margin-right: 1em;
+  min-width: fit-content;
+  padding: 0.5em 1em;
+  font-size: 1rem;
+  color: white;
+  background-color: #bd2333;
+  border: 2px solid #bd2333;
+  transition: color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+}
+
+
+
+/* .page-link:focus,
 .form-control:focus,
 .btn,
 .navbar-dark .navbar-toggler {
@@ -32,9 +67,7 @@ a:hover {
   box-shadow: none;
 }
 
-.form-control:focus {
-  border: 1px solid rgba(0, 0, 0, 0.4);
-}
+
 
 .btn,
 .btn.btn-border:hover {
@@ -48,7 +81,8 @@ a:hover {
     border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.btn-border,
+*/
+/* .btn-border,
 .btn:hover,
 .btn-primary:hover {
   background: transparent;
@@ -85,7 +119,7 @@ a:hover {
   color: rgba(255, 255, 255, 0.85);
   border-color: rgba(255, 255, 255, 0.85);
   border-width: 1px;
-}
+} */
 
 /* h1,
 .card-text {

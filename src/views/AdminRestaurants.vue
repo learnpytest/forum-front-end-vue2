@@ -12,6 +12,7 @@
 </template>
 <script>
 import AdminNav from "../components/AdminNav.vue";
+
 import AdminRestaurantsTable from "../components/AdminRestaurantsTable.vue";
 
 export default {

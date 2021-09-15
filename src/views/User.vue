@@ -8,8 +8,8 @@
         :user="user"
         :currentUser="currentUser"
         :isAuthenticated="isAuthenticated"
-        @after-delete-following="handleAfterDeleteFollowing"
-        @after-add-following="handleAfterAddFollowing"
+        @after-delete-following="updateViewAfterDeleteFollowing"
+        @after-add-following="updateViewAfterAddFollowing"
       />
 
       <div class="row">
@@ -135,14 +135,14 @@ export default {
         });
       }
     },
-    handleAfterDeleteFollowing() {
+    updateViewAfterDeleteFollowing() {
       this.user.isFollowed = false;
       this.followers = this.followers.filter(
         (follower) => follower.id !== this.currentUser.id
       );
       this.user.followersCount = this.followers.length;
     },
-    handleAfterAddFollowing() {
+    updateViewAfterAddFollowing() {
       this.user.isFollowed = true;
       this.followers.push(this.currentUser);
       this.user.followersCount = this.followers.length;

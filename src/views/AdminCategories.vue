@@ -25,7 +25,8 @@
         </div>
       </div>
     </form>
-    <table class="table">
+    <Spinner v-if="isLoading" />
+    <table class="table" v-else>
       <thead class="thead-dark">
         <tr>
           <th scope="col" width="60">#</th>
@@ -51,7 +52,7 @@
             <span
               v-show="category.isEditing"
               class="cancel"
-              @click.stop.prevent="handleCancel(category.id)"
+              @click.stop.prevent="handleCancelEditing(category.id)"
             >
               ✕
             </span>
@@ -81,7 +82,7 @@
             <button
               type="button"
               class="btn btn-link mr-2"
-              @click.stop.prevent="deleteCategory(category.id)"
+              @click.stop.prevent="destroyCategory(category.id)"
             >
               Delete
             </button>
@@ -94,19 +95,24 @@
 
 <script>
 import AdminNav from "../components/AdminNav.vue";
+import Spinner from "../components/Spinner.vue";
+
 import adminAPI from "../apis/admin";
+
 import { Toast } from "../utils/helpers";
 
 export default {
   name: "AdminCategories",
   components: {
     AdminNav,
+    Spinner,
   },
   data() {
     return {
       categories: [],
       newCategoryName: "",
       isProcessing: false,
+      isLoading: true,
     };
   },
   created() {
@@ -115,6 +121,7 @@ export default {
   methods: {
     async fetchCategories() {
       try {
+        this.isLoading = true;
         const { data, statusText } = await adminAPI.categories.get();
         if (statusText !== "OK")
           throw new Error("無法取得餐廳類別，稍後再嘗試");
@@ -123,7 +130,9 @@ export default {
           isEditing: false,
           nameCashed: "",
         }));
+        this.isLoading = false;
       } catch (err) {
+        this.isLoading = false;
         Toast.fire({
           icon: "error",
           title: err,
@@ -133,6 +142,7 @@ export default {
     async createCategory() {
       //todo向後端新增類別取得類別id
       try {
+        this.isLoading = true;
         if (!this.newCategoryName.trim().length) return;
         this.isProcessing = true;
         const { data } = await adminAPI.categories.create({
@@ -142,7 +152,9 @@ export default {
         this.fetchCategories();
         this.newCategoryName = "";
         this.isProcessing = false;
+        this.isLoading = false;
       } catch (err) {
+        this.isLoading = false;
         this.isProcessing = false;
         Toast.fire({
           icon: "error",
@@ -150,7 +162,7 @@ export default {
         });
       }
     },
-    async deleteCategory(categoryId) {
+    async destroyCategory(categoryId) {
       //todo向後端刪除類別確認刪除
       try {
         const { data } = await adminAPI.categories.delete({
@@ -194,7 +206,7 @@ export default {
       }
       this.toggleEditing(categoryId);
     },
-    handleCancel(categoryId) {
+    handleCancelEditing(categoryId) {
       this.categories = this.categories.map((category) => {
         if (category.id === categoryId) {
           return {
