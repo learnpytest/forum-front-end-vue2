@@ -25,8 +25,7 @@
         </div>
       </div>
     </form>
-    <Spinner v-if="isLoading" />
-    <table class="table" v-else>
+    <table class="table">
       <thead class="thead-dark">
         <tr>
           <th scope="col" width="60">#</th>
@@ -95,7 +94,6 @@
 
 <script>
 import AdminNav from "../components/AdminNav.vue";
-import Spinner from "../components/Spinner.vue";
 
 import adminAPI from "../apis/admin";
 
@@ -105,14 +103,12 @@ export default {
   name: "AdminCategories",
   components: {
     AdminNav,
-    Spinner,
   },
   data() {
     return {
       categories: [],
       newCategoryName: "",
       isProcessing: false,
-      isLoading: true,
     };
   },
   created() {
@@ -121,7 +117,6 @@ export default {
   methods: {
     async fetchCategories() {
       try {
-        this.isLoading = true;
         const { data, statusText } = await adminAPI.categories.get();
         if (statusText !== "OK")
           throw new Error("無法取得餐廳類別，稍後再嘗試");
@@ -130,9 +125,7 @@ export default {
           isEditing: false,
           nameCashed: "",
         }));
-        this.isLoading = false;
       } catch (err) {
-        this.isLoading = false;
         Toast.fire({
           icon: "error",
           title: err,
@@ -142,7 +135,6 @@ export default {
     async createCategory() {
       //todo向後端新增類別取得類別id
       try {
-        this.isLoading = true;
         if (!this.newCategoryName.trim().length) return;
         this.isProcessing = true;
         const { data } = await adminAPI.categories.create({
@@ -152,9 +144,7 @@ export default {
         this.fetchCategories();
         this.newCategoryName = "";
         this.isProcessing = false;
-        this.isLoading = false;
       } catch (err) {
-        this.isLoading = false;
         this.isProcessing = false;
         Toast.fire({
           icon: "error",

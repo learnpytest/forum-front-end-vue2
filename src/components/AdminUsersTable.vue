@@ -1,7 +1,6 @@
 <template>
   <table class="table">
-    <Spinner v-if="isLoading" />
-    <template v-else>
+    <template>
       <thead class="thead-dark">
         <tr>
           <th scope="col">#</th>
@@ -34,22 +33,16 @@
 </template>
 
 <script>
-import Spinner from "../components/Spinner";
+import { Toast } from "../utils/helpers";
 
 import adminAPI from "../apis/admin";
 
-import { Toast } from "../utils/helpers";
 import { mapState } from "vuex";
 
 export default {
-  name: "AdminUsersTable",
-  components: {
-    Spinner,
-  },
   data() {
     return {
       users: [],
-      isLoading: true,
     };
   },
   created() {
@@ -65,13 +58,10 @@ export default {
     async fetchUsers() {
       //向後端取得users
       try {
-        this.isLoading = true;
         const { data, statusText } = await adminAPI.users.get();
         if (statusText !== "OK") throw new Error(statusText);
         this.users = [...data.users];
-        this.isLoading = false;
       } catch (err) {
-        this.isLoading = false;
         Toast.fire({
           icon: "error",
           title: "無法取得使用者資料",

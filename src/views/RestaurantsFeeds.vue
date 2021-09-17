@@ -1,8 +1,7 @@
 <template>
   <div class="container py-5">
     <NavTabs />
-    <Spinner v-if="isLoading" />
-    <template v-else>
+    <template>
       <h1 class="mt-5">最新動態</h1>
       <hr />
       <div class="row mt-5">
@@ -23,9 +22,9 @@
 import NavTabs from "../components/NavTabs.vue";
 import NewestRestaurants from "../components/NewestRestaurants.vue";
 import NewestComments from "../components/NewestComments.vue";
+
 import restaurantsFeedsAPI from "../apis/restaurantsFeeds";
 import { Toast } from "../utils/helpers";
-import Spinner from "../components/Spinner.vue";
 
 const filterComments = function (comments) {
   return comments.filter((comment) => comment.Restaurant && comment.text);
@@ -37,13 +36,11 @@ export default {
     NavTabs,
     NewestRestaurants,
     NewestComments,
-    Spinner,
   },
   data() {
     return {
       restaurants: [],
       comments: [],
-      isLoading: true,
     };
   },
   created() {
@@ -52,16 +49,13 @@ export default {
   methods: {
     async fetchFeeds() {
       try {
-        this.isLoading = true;
         const { data, statusText } = await restaurantsFeedsAPI.getFeeds();
         if (statusText !== "OK")
           throw new Error("無法取得最新資料，稍後再嘗試");
         const { restaurants, comments } = data;
         this.restaurants = restaurants;
         this.comments = filterComments(comments);
-        this.isLoading = false;
       } catch (err) {
-        this.isLoading = false;
         Toast.fire({ icon: "error", title: err });
       }
     },

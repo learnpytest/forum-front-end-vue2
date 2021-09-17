@@ -4,15 +4,18 @@
     <AdminRestaurantForm
       @after-submit="handleAfterSubmit"
       :initial-restaurant="restaurant"
-      :isProcessing="isProcessing"
     />
   </div>
 </template>
 
 <script>
 import AdminRestaurantForm from "../components/AdminRestaurantForm";
-import adminAPI from "../apis/admin";
+
 import { Toast } from "../utils/helpers";
+
+import adminAPI from "../apis/admin";
+
+import { mapState } from "vuex";
 
 export default {
   name: "AdminRestaurantEdit",
@@ -34,6 +37,9 @@ export default {
       isProcessing: false,
     };
   },
+  computed: {
+    ...mapState(["workInProcess"]),
+  },
   created() {
     //todo fetch api enter id
     this.fetchRestaurant(this.$route.params.id);
@@ -45,7 +51,6 @@ export default {
   },
   methods: {
     async fetchRestaurant(restaurantId) {
-      // this.$store.dispatch("fetchRestaurant");
       try {
         const { data, statusText } = await adminAPI.restaurants.getDetail({
           restaurantId,
@@ -81,15 +86,22 @@ export default {
       //   console.log(name, value);
       // }
       try {
-        this.isProcessing = true;
+        this.$store.commit("setWorkInProcess", {
+          work: "submitRestaurantForm",
+        });
         const { data } = await adminAPI.restaurants.update({
           restaurantId: this.restaurant.id,
           formData,
         });
         if (data.status !== "success") throw new Error(data.message);
         this.$router.push({ name: "admin-restaurants" });
+        this.$store.commit("setWorkInProcess", {
+          work: "",
+        });
       } catch (err) {
-        this.isProcessing = false;
+        this.$store.commit("setWorkInProcess", {
+          work: "",
+        });
         Toast.fire({ icon: "error", title: "無法更新餐廳" });
       }
     },

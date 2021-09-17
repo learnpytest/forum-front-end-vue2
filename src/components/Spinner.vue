@@ -47,3 +47,9 @@
   }
 }
 </style>
+
+<script>
+export default {
+  name: "Spinner",
+};
+</script>

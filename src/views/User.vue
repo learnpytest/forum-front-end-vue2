@@ -1,9 +1,8 @@
 <template>
   <div class="container py-5">
     <NavTabs />
-    <Spinner v-if="isLoading" />
     <!-- user card UserProfileCard.vue -->
-    <template v-else>
+    <template>
       <UserProfileCard
         :user="user"
         :currentUser="currentUser"
@@ -41,7 +40,6 @@ import UserFollowersCard from "../components/UserFollowersCard.vue";
 import UserCommentsCard from "../components/UserCommentsCard.vue";
 import UserFavoritedRestaurantsCard from "../components/UserFavoritedRestaurantsCard.vue";
 import usersAPI from "../apis/users";
-import Spinner from "../components/Spinner";
 
 import { Toast } from "../utils/helpers";
 import { mapState } from "vuex";
@@ -55,7 +53,6 @@ export default {
     UserFollowersCard,
     UserCommentsCard,
     UserFavoritedRestaurantsCard,
-    Spinner,
   },
   data() {
     return {
@@ -74,7 +71,6 @@ export default {
       followings: [],
       comments: [],
       favoritedRestaurants: [],
-      isLoading: true,
     };
   },
   computed: {
@@ -94,7 +90,6 @@ export default {
     async fetchUser(userId) {
       //todo fetch api
       try {
-        this.isLoading = true;
         const { data, statusText } = await usersAPI.getUser({ userId });
         if (statusText !== "OK") throw new Error(statusText);
         const {
@@ -126,9 +121,7 @@ export default {
         this.followings = Followings;
         this.comments = Comments;
         this.favoritedRestaurants = FavoritedRestaurants;
-        this.isLoading = false;
       } catch (err) {
-        this.isLoading = false;
         Toast.fire({
           icon: "error",
           title: "無法取得使用者資料",

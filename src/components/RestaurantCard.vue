@@ -29,32 +29,44 @@
           class="btn btn-danger btn-border favorite mr-2"
           v-if="restaurant.isFavorited"
           @click.stop.prevent="deleteFavorite(restaurant.id)"
+          :disabled="workInProcess.work === 'fav' + restaurant.id"
         >
-          移除最愛
+          {{
+            workInProcess.work === "fav" + restaurant.id ? "處理中" : "移除最愛"
+          }}
         </button>
         <button
           type="button"
           class="btn btn-primary btn-border favorite mr-2"
           v-else
           @click.stop.prevent="addFavorite(restaurant.id)"
+          :disabled="workInProcess.work === 'fav' + restaurant.id"
         >
-          加到最愛
+          {{
+            workInProcess.work === "fav" + restaurant.id ? "處理中" : "加到最愛"
+          }}
         </button>
         <button
           type="button"
           class="btn btn-danger like mr-2"
           v-if="restaurant.isLiked"
           @click.stop.prevent="unLike(restaurant.id)"
+          :disabled="workInProcess.work === 'like' + restaurant.id"
         >
-          Unlike
+          {{
+            workInProcess.work === "like" + restaurant.id ? "處理中" : "Unlike"
+          }}
         </button>
         <button
           type="button"
           class="btn btn-primary like mr-2"
           v-else
           @click.stop.prevent="addLike(restaurant.id)"
+          :disabled="workInProcess.work === 'like' + restaurant.id"
         >
-          Like
+          {{
+            workInProcess.work === "like" + restaurant.id ? "處理中" : "Like"
+          }}
         </button>
       </div>
     </div>
@@ -63,8 +75,11 @@
 
 <script>
 import { mixinEmptyImage } from "../utils/mixins";
-import usersAPI from "../apis/users";
 import { Toast } from "../utils/helpers";
+
+import usersAPI from "../apis/users";
+
+import { mapState } from "vuex";
 
 export default {
   name: "RestaurantCard",
@@ -80,9 +95,11 @@ export default {
       restaurant: this.initialRestaurant,
     };
   },
+  computed: { ...mapState(["workInProcess"]) },
   methods: {
     async deleteFavorite(restaurantId) {
       try {
+        this.$store.commit("setWorkInProcess", { work: "fav" + restaurantId });
         const { data } = await usersAPI.deleteFavorite({ restaurantId });
         if (data.status !== "success")
           throw new Error("無法移除最愛餐廳，稍後再嘗試");
@@ -90,7 +107,10 @@ export default {
           ...this.restaurant,
           isFavorited: false,
         };
+
+        this.$store.commit("setWorkInProcess", { work: "" });
       } catch (err) {
+        this.$store.commit("setWorkInProcess", { work: "" });
         Toast.fire({
           icon: "error",
           title: err,
@@ -99,6 +119,7 @@ export default {
     },
     async addFavorite(restaurantId) {
       try {
+        this.$store.commit("setWorkInProcess", { work: "fav" + restaurantId });
         const { data } = await usersAPI.addFavorite({ restaurantId });
         if (data.status !== "success")
           throw new Error("無法新增最愛餐廳，稍後再嘗試");
@@ -106,7 +127,9 @@ export default {
           ...this.restaurant,
           isFavorited: true,
         };
+        this.$store.commit("setWorkInProcess", { work: "" });
       } catch (err) {
+        this.$store.commit("setWorkInProcess", { work: "" });
         Toast.fire({
           icon: "error",
           title: err,
@@ -115,19 +138,25 @@ export default {
     },
     async unLike(restaurantId) {
       try {
+        this.$store.commit("setWorkInProcess", { work: "like" + restaurantId });
         const { data } = await usersAPI.unLike({ restaurantId });
         if (data.status !== "success") throw new Error("無法取消讚");
         this.restaurant.isLiked = false;
+        this.$store.commit("setWorkInProcess", { work: "" });
       } catch (err) {
+        this.$store.commit("setWorkInProcess", { work: "" });
         Toast.fire({ icon: "error", title: err });
       }
     },
     async addLike(restaurantId) {
       try {
+        this.$store.commit("setWorkInProcess", { work: "like" + restaurantId });
         const { data } = await usersAPI.like({ restaurantId });
         if (data.status !== "success") throw new Error("無法按讚");
         this.restaurant.isLiked = true;
+        this.$store.commit("setWorkInProcess", { work: "" });
       } catch (err) {
+        this.$store.commit("setWorkInProcess", { work: "" });
         Toast.fire({ icon: "error", title: err });
       }
     },

@@ -26,16 +26,26 @@
           class="btn btn-danger mr-2"
           v-if="restaurantTop.isFavorited"
           @click="deleteFavorite(restaurantTop.id)"
+          :disabled="workInProcess.work === 'fav' + restaurantTop.id"
         >
-          移除最愛
+          {{
+            workInProcess.work === "fav" + restaurantTop.id
+              ? "處理中"
+              : "移除最愛"
+          }}
         </button>
         <button
           type="button"
           class="btn btn-primary"
           v-else
           @click="addFavorite(restaurantTop.id)"
+          :disabled="workInProcess.work === 'fav' + restaurantTop.id"
         >
-          加到最愛
+          {{
+            workInProcess.work === "fav" + restaurantTop.id
+              ? "處理中"
+              : "加到最愛"
+          }}
         </button>
       </div>
     </div>
@@ -43,6 +53,11 @@
 </template>
 <script>
 import { mixinEmptyImage } from "../utils/mixins";
+import { Toast } from "../utils/helpers";
+
+import usersAPI from "../apis/users";
+
+import { mapState } from "vuex";
 
 export default {
   name: "RestaurantsTop",
@@ -53,14 +68,45 @@ export default {
       required: true,
     },
   },
+  computed: { ...mapState(["workInProcess"]) },
   methods: {
-    deleteFavorite(restaurantId) {
+    async deleteFavorite(restaurantId) {
       //todo發送api
-      this.$emit("after-delete-favorite", restaurantId);
+      try {
+        this.$store.commit("setWorkInProcess", {
+          work: "fav" + restaurantId,
+        });
+        const { data } = await usersAPI.deleteFavorite({ restaurantId });
+        if (data.status !== "success") throw new Error("無法刪除最愛");
+        this.$emit("after-delete-favorite", restaurantId);
+        this.$store.commit("setWorkInProcess", {
+          work: "",
+        });
+      } catch (err) {
+        this.$store.commit("setWorkInProcess", {
+          work: "",
+        });
+        Toast.fire({ icon: "error", title: err });
+      }
     },
-    addFavorite(restaurantId) {
+    async addFavorite(restaurantId) {
       //todo發送api
-      this.$emit("after-add-favorite", restaurantId);
+      try {
+        this.$store.commit("setWorkInProcess", {
+          work: "fav" + restaurantId,
+        });
+        const { data } = await usersAPI.addFavorite({ restaurantId });
+        if (data.status !== "success") throw new Error("無法新增最愛");
+        this.$emit("after-add-favorite", restaurantId);
+        this.$store.commit("setWorkInProcess", {
+          work: "",
+        });
+      } catch (err) {
+        this.$store.commit("setWorkInProcess", {
+          work: "",
+        });
+        Toast.fire({ icon: "error", title: err });
+      }
     },
   },
 };

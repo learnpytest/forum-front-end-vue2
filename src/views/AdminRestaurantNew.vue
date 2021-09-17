@@ -1,26 +1,25 @@
 <template>
   <div class="container py-5">
     <!-- 餐廳表單 AdminRestaurantForm -->
-    <AdminRestaurantForm
-      @after-submit="handleAfterSubmit"
-      :isProcessing="isProcessing"
-    />
+    <AdminRestaurantForm @after-submit="handleAfterSubmit" />
   </div>
 </template>
 <script>
 import AdminRestaurantForm from "../components/AdminRestaurantForm";
-import adminAPI from "../apis/admin";
+
 import { Toast } from "../utils/helpers";
+
+import adminAPI from "../apis/admin";
+
+import { mapState } from "vuex";
 
 export default {
   name: "AdminRestaurantNew",
   components: {
     AdminRestaurantForm,
   },
-  data() {
-    return {
-      isProcessing: false,
-    };
+  computed: {
+    ...mapState(["workInProcess"]),
   },
   methods: {
     async handleAfterSubmit(formData) {
@@ -29,12 +28,15 @@ export default {
       //   console.log(name, value);
       // }
       try {
-        this.isProcessing = true;
+        this.$store.commit("setWorkInProcess", {
+          work: "submitRestaurantForm",
+        });
         const { data } = await adminAPI.restaurants.create({ formData });
         if (data.status !== "success") throw new Error(data.message);
         this.$router.push("/admin/restaurants");
+        this.$store.commit("setWorkInProcess", { work: "" });
       } catch (err) {
-        this.isProcessing = false;
+        this.$store.commit("setWorkInProcess", { work: "" });
         Toast.fire({ icon: "error", title: "無法新增餐廳" });
       }
     },

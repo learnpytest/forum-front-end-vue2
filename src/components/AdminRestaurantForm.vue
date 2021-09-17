@@ -1,5 +1,5 @@
 <template>
-  <form @submit.stop.prevent="handleSumbit" v-show="!isLoading">
+  <form @submit.stop.prevent="handleSumbit">
     <div class="form-group">
       <label for="name">Name</label>
       <input
@@ -101,14 +101,21 @@
       />
     </div>
 
-    <button type="submit" class="btn btn-primary mt-3" :disabled="isProcessing">
-      {{ isProcessing ? "處理中" : "送出" }}
+    <button
+      type="submit"
+      class="btn btn-primary mt-3"
+      :disabled="workInProcess.work === 'submitRestaurantForm'"
+    >
+      {{ workInProcess.work === "submitRestaurantForm" ? "處理中" : "送出" }}
     </button>
   </form>
 </template>
 <script>
-import adminAPI from "../apis/admin";
 import { Toast } from "../utils/helpers";
+
+import adminAPI from "../apis/admin";
+
+import { mapState } from "vuex";
 
 export default {
   name: "AdminRestaurantForm",
@@ -127,10 +134,6 @@ export default {
         };
       },
     },
-    isProcessing: {
-      type: Boolean,
-      default: false,
-    },
   },
   data() {
     return {
@@ -138,8 +141,10 @@ export default {
         ...this.initialRestaurant,
       },
       categories: [],
-      isLoading: true,
     };
+  },
+  computed: {
+    ...mapState(["workInProcess"]),
   },
   created() {
     this.fetchCategories();
@@ -156,9 +161,7 @@ export default {
         const { data, statusText } = await adminAPI.categories.get();
         if (statusText !== "OK") throw new Error("無法取得餐廳類別");
         this.categories = data.categories;
-        this.isLoading = false;
       } catch (err) {
-        this.isLoading = false;
         Toast.fire({ icon: "error", title: err });
       }
     },

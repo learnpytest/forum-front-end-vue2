@@ -2,9 +2,7 @@
   <div class="container py-5">
     <!-- NavTabs -->
     <NavTabs />
-    <Spinner v-if="isLoading" />
-
-    <template v-else>
+    <template>
       <!-- 餐廳類別標籤 -->
       <NavPills :categories="categories" />
 
@@ -34,10 +32,10 @@ import NavTabs from "../components/NavTabs.vue";
 import RestaurantCard from "../components/RestaurantCard.vue";
 import NavPills from "../components/NavPills.vue";
 import RestaurantsPagination from "../components/RestaurantsPagination.vue";
-import restaurantsAPI from "../apis/restaurants";
-import Spinner from "../components/Spinner.vue";
 
 import { Toast } from "../utils/helpers";
+
+import restaurantsAPI from "../apis/restaurants";
 
 export default {
   name: "restaurants",
@@ -46,7 +44,6 @@ export default {
     RestaurantCard,
     NavPills,
     RestaurantsPagination,
-    Spinner,
   },
   data() {
     return {
@@ -57,7 +54,6 @@ export default {
       totalPage: [],
       prev: -1,
       next: -1,
-      isLoading: true,
     };
   },
   created() {
@@ -68,7 +64,6 @@ export default {
   methods: {
     async fetchRestaurants({ queryPage, queryCategoryId }) {
       try {
-        this.isLoading = true;
         const { data, statusText } = await restaurantsAPI.getRestaurants({
           page: queryPage,
           categoryId: queryCategoryId,
@@ -94,9 +89,7 @@ export default {
           this.prev,
           this.next,
         ] = [restaurants, categories, categoryId, page, totalPage, prev, next];
-        this.isLoading = false;
       } catch (err) {
-        this.isLoading = false;
         Toast.fire({
           icon: "error",
           title: err,

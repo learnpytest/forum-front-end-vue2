@@ -12,25 +12,32 @@
         type="button"
         class="btn btn-danger"
         v-if="user.isFollowed"
-        @click.stop.prevent="cancelFollowing"
+        @click.stop.prevent="cancelFollowing()"
+        :disabled="workInProcess.work === 'following' + user.id"
       >
-        取消追蹤
+        {{
+          workInProcess.work === "following" + user.id ? "處理中" : "取消追蹤"
+        }}
       </button>
       <button
         type="button"
         class="btn btn-primary"
         v-else
-        @click.stop.prevent="addFollowing"
+        @click.stop.prevent="addFollowing()"
+        :disabled="workInProcess.work === 'following' + user.id"
       >
-        追蹤
+        {{ workInProcess.work === "following" + user.id ? "處理中" : "追蹤" }}
       </button>
     </p>
   </div>
 </template>
 <script>
 import { mixinEmptyImage } from "../utils/mixins";
-import usersAPI from "../apis/users";
 import { Toast } from "../utils/helpers";
+
+import usersAPI from "../apis/users";
+
+import { mapState } from "vuex";
 
 export default {
   name: "UserTopCard",
@@ -46,9 +53,15 @@ export default {
       user: this.initialUser,
     };
   },
+  computed: {
+    ...mapState(["workInProcess"]),
+  },
   methods: {
     async cancelFollowing() {
       try {
+        this.$store.commit("setWorkInProcess", {
+          work: "following" + this.user.id,
+        });
         const { data } = await usersAPI.deleteFollowing({
           userId: this.user.id,
         });
@@ -58,12 +71,17 @@ export default {
           isFollowed: false,
           followerCount: this.user.followerCount - 1,
         };
+        this.$store.commit("setWorkInProcess", { work: "" });
       } catch (err) {
+        this.$store.commit("setWorkInProcess", { work: "" });
         Toast.fire({ icon: "error", title: err });
       }
     },
     async addFollowing() {
       try {
+        this.$store.commit("setWorkInProcess", {
+          work: "following" + this.user.id,
+        });
         const { data } = await usersAPI.addFollowing({ userId: this.user.id });
         if (data.status !== "success") throw new Error("無法加入追蹤");
         this.user = {
@@ -71,7 +89,9 @@ export default {
           isFollowed: true,
           followerCount: this.user.followerCount + 1,
         };
+        this.$store.commit("setWorkInProcess", { work: "" });
       } catch (err) {
+        this.$store.commit("setWorkInProcess", { work: "" });
         Toast.fire({ icon: "error", title: err });
       }
     },

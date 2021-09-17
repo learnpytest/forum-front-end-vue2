@@ -40,9 +40,7 @@ export default {
     restaurantId
   }) {
     return apiHelper.delete(`/like/${restaurantId}`)
-
   },
-
   addFollowing({
     userId
   }) {

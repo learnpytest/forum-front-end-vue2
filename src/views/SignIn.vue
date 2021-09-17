@@ -80,18 +80,18 @@ export default {
           email: this.email,
           password: this.password,
         });
-        if (data.status !== "success") throw new Error(data.message);
+        if (data.status !== "success")
+          throw new Error("請確認您輸入了正確的帳號密碼");
         localStorage.setItem("token", data.token);
         //將currentUser存入vuex
         this.$store.commit("setCurrentUser", data.user);
-
         this.$router.push("/restaurants");
       } catch (err) {
         this.isProcessing = false;
         this.password = "";
         Toast.fire({
           icon: "warning",
-          title: "請確認您輸入了正確的帳號密碼",
+          title: err,
         });
       }
     },

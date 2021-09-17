@@ -42,6 +42,7 @@
         class="btn btn-danger btn-border mr-2"
         v-if="restaurant.isFavorited"
         @click="removeFavorite(restaurant.id)"
+        :disabled="isProcessing['fav' + restaurant.id]"
       >
         移除最愛
       </button>
@@ -50,6 +51,7 @@
         class="btn btn-primary btn-border mr-2"
         v-else
         @click="addFavorite(restaurant.id)"
+        :disabled="isProcessing['fav' + restaurant.id]"
       >
         加到最愛
       </button>
@@ -58,6 +60,7 @@
         class="btn btn-danger like mr-2"
         v-if="restaurant.isLiked"
         @click="unLike(restaurant.id)"
+        :disabled="isProcessing['like' + restaurant.id]"
       >
         Unlike
       </button>
@@ -66,6 +69,7 @@
         class="btn btn-primary like mr-2"
         v-else
         @click="addLike(restaurant.id)"
+        :disabled="isProcessing['like' + restaurant.id]"
       >
         Like
       </button>
@@ -90,6 +94,7 @@ export default {
   data() {
     return {
       restaurant: this.initialRestaurant,
+      isProcessing: [],
     };
   },
   watch: {
@@ -100,11 +105,14 @@ export default {
   methods: {
     async removeFavorite(restaurantId) {
       try {
+        this.$set(this.isProcessing, `rest${restaurantId}`, true);
         const { data } = await usersAPI.deleteFavorite({ restaurantId });
         if (data.status !== "success")
           throw new Error("無法移除最愛餐廳，稍後再嘗試");
         this.$emit("after-remove-favorite");
+        this.$set(this.isProcessing, `rest${restaurantId}`, false);
       } catch (err) {
+        this.$set(this.isProcessing, `rest${restaurantId}`, false);
         Toast.fire({
           icon: "error",
           title: err,
@@ -113,11 +121,14 @@ export default {
     },
     async addFavorite(restaurantId) {
       try {
+        this.$set(this.isProcessing, `rest${restaurantId}`, true);
         const { data } = await usersAPI.addFavorite({ restaurantId });
         if (data.status !== "success")
           throw new Error("無法新增最愛餐廳，稍後再嘗試");
         this.$emit("after-add-favorite");
+        this.$set(this.isProcessing, `rest${restaurantId}`, false);
       } catch (err) {
+        this.$set(this.isProcessing, `rest${restaurantId}`, false);
         Toast.fire({
           icon: "error",
           title: err,
@@ -126,10 +137,13 @@ export default {
     },
     async unLike(restaurantId) {
       try {
+        this.$set(this.isProcessing, `rest${restaurantId}`, true);
         const { data } = await usersAPI.unLike({ restaurantId });
         if (data.status !== "success")
           throw new Error("無法取消按讚，稍後再嘗試");
+        this.$set(this.isProcessing, `rest${restaurantId}`, false);
       } catch (err) {
+        this.$set(this.isProcessing, `rest${restaurantId}`, false);
         Toast.fire({
           icon: "error",
           title: err,
@@ -139,10 +153,13 @@ export default {
     },
     async addLike(restaurantId) {
       try {
+        this.$set(this.isProcessing, `rest${restaurantId}`, true);
         const { data } = await usersAPI.like({ restaurantId });
         if (data.status !== "success") throw new Error("無法按讚，稍後再嘗試");
         this.$emit("after-add-like");
+        this.$set(this.isProcessing, `rest${restaurantId}`, false);
       } catch (err) {
+        this.$set(this.isProcessing, `rest${restaurantId}`, false);
         Toast.fire({
           icon: "error",
           title: err,

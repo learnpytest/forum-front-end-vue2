@@ -17,7 +17,10 @@ export default new Vuex.Store({
     },
     token: "",
     isAuthenticated: false,
-    isProcessing: true
+    preloader: false,
+    workInProcess: {
+      work: "",
+    }
   },
   mutations: {
     setCurrentUser(state, currentUser) {
@@ -27,13 +30,18 @@ export default new Vuex.Store({
       }
       state.token = localStorage.getItem('token')
       state.isAuthenticated = true
-      state.isProcessing = false
     },
     revokeAuthentication(state) {
       state.currentUser = {}
       state.isAuthenticated = false
       state.token = ""
       localStorage.removeItem('token')
+    },
+    setPreloader(state, payload) {
+      state.preloader = payload
+    },
+    setWorkInProcess(state, payload) {
+      state.workInProcess = payload
     }
   },
   actions: {
