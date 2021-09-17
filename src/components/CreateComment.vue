@@ -8,13 +8,21 @@
       <button type="button" class="btn btn-link" @click="$router.back()">
         回上一頁
       </button>
-      <button type="submit" class="btn btn-primary mr-0">Submit</button>
+      <button
+        type="submit"
+        class="btn btn-primary mr-0"
+        :disabled="workInProcess.work === 'submitComment'"
+      >
+        {{ workInProcess.work === "submitComment" ? "處理中" : "Submit" }}
+      </button>
     </div>
   </form>
 </template>
 <script>
 import commentsAPI from "../apis/comments";
 import { Toast } from "../utils/helpers";
+
+import { mapState } from "vuex";
 
 export default {
   name: "CreateComment",
@@ -29,6 +37,9 @@ export default {
       text: "",
     };
   },
+  computed: {
+    ...mapState(["workInProcess"]),
+  },
   methods: {
     async handleSubmit() {
       const payload = {
@@ -36,12 +47,15 @@ export default {
         restaurantId: this.restaurantId,
       };
       try {
+        this.$store.commit("setWorkInProcess", { work: "submitComment" });
         const { statusText } = await commentsAPI.comments.create({
           formData: payload,
         });
         if (statusText !== "OK") throw new Error("無法新增評論");
         this.$emit("after-create-comment");
+        this.$store.commit("setWorkInProcess", { work: "" });
       } catch (err) {
+        this.$store.commit("setWorkInProcess", { work: "" });
         Toast.fire({
           icon: "error",
           title: err,

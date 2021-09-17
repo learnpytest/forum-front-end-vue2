@@ -16,6 +16,8 @@ axiosInstance.interceptors.request.use(config => {
   }
   if (!store.state.workInProcess.work) {
     store.commit('setPreloader', true)
+  } else {
+    store.commit('setPreloader', false)
   }
   return config
 }, err => Promise.reject(err))

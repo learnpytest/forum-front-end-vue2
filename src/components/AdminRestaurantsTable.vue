@@ -46,7 +46,10 @@
 
 <script>
 import { Toast } from "../utils/helpers";
+
 import adminAPI from "../apis/admin";
+
+import { mapState } from "vuex";
 
 export default {
   name: "AdminRestaurantsTable",
@@ -54,6 +57,9 @@ export default {
     return {
       restaurants: [],
     };
+  },
+  computed: {
+    ...mapState(["workInProcess"]),
   },
   created() {
     //fetch api
@@ -71,12 +77,14 @@ export default {
       }
     },
     async deleteRestaurant(id) {
-      //todo向後端刪除資料
       try {
+        this.$store.commit("setWorkInProcess", { work: "deleteRestaurant" });
         const { data, statusText } = await adminAPI.restaurants.delete({ id });
         if (statusText !== "OK") throw new Error(data.message);
         this.restaurants = this.restaurants.filter((rest) => rest.id !== id);
+        this.$store.commit("setWorkInProcess", { work: "" });
       } catch (err) {
+        this.$store.commit("setWorkInProcess", { work: "" });
         Toast.fire({ icon: "error", title: "無法刪除餐廳" });
       }
     },

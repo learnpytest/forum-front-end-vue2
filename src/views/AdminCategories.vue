@@ -18,9 +18,9 @@
             type="button"
             class="btn btn-primary"
             @click.stop.prevent="createCategory"
-            :disabled="isProcessing"
+            :disabled="workInProcess.work === 'createCategory'"
           >
-            新增
+            {{ workInProcess.work === "createCategory" ? "處理中" : "新增" }}
           </button>
         </div>
       </div>
@@ -75,8 +75,13 @@
                   name: category.name,
                 })
               "
+              :disabled="workInProcess.work === 'updateCategory' + category.id"
             >
-              Save
+              {{
+                workInProcess.work === "updateCategory" + category.id
+                  ? "處理中"
+                  : "Save"
+              }}
             </button>
             <button
               type="button"
@@ -93,11 +98,13 @@
 </template>
 
 <script>
+import { Toast } from "../utils/helpers";
+
 import AdminNav from "../components/AdminNav.vue";
 
 import adminAPI from "../apis/admin";
 
-import { Toast } from "../utils/helpers";
+import { mapState } from "vuex";
 
 export default {
   name: "AdminCategories",
@@ -108,8 +115,10 @@ export default {
     return {
       categories: [],
       newCategoryName: "",
-      isProcessing: false,
     };
+  },
+  computed: {
+    ...mapState(["workInProcess"]),
   },
   created() {
     this.fetchCategories();
@@ -136,16 +145,22 @@ export default {
       //todo向後端新增類別取得類別id
       try {
         if (!this.newCategoryName.trim().length) return;
-        this.isProcessing = true;
+        this.$store.commit("setWorkInProcess", {
+          work: "createCategory",
+        });
         const { data } = await adminAPI.categories.create({
           name: this.newCategoryName,
         });
         if (data.status !== "success") throw new Error(data.message);
-        this.fetchCategories();
+        await this.fetchCategories();
         this.newCategoryName = "";
-        this.isProcessing = false;
+        this.$store.commit("setWorkInProcess", {
+          work: "",
+        });
       } catch (err) {
-        this.isProcessing = false;
+        this.$store.commit("setWorkInProcess", {
+          work: "",
+        });
         Toast.fire({
           icon: "error",
           title: "無法新增餐廳類別，稍後再嘗試",
@@ -155,6 +170,9 @@ export default {
     async destroyCategory(categoryId) {
       //todo向後端刪除類別確認刪除
       try {
+        this.$store.commit("setWorkInProcess", {
+          work: "destroyCategory",
+        });
         const { data } = await adminAPI.categories.delete({
           categoryId,
         });
@@ -162,7 +180,13 @@ export default {
         this.categories = this.categories.filter(
           (category) => category.id !== categoryId
         );
+        this.$store.commit("setWorkInProcess", {
+          work: "",
+        });
       } catch (err) {
+        this.$store.commit("setWorkInProcess", {
+          work: "",
+        });
         Toast.fire({
           icon: "error",
           title: "無法刪除餐廳類別，稍後再嘗試",
@@ -183,12 +207,17 @@ export default {
     async updateCategory({ categoryId, name }) {
       //todo向後端修改資料
       try {
+        this.$store.commit("setWorkInProcess", {
+          work: "updateCategory" + categoryId,
+        });
         const { data } = await adminAPI.categories.update({
           categoryId,
           name,
         });
         if (data.status !== "success") throw new Error(data.message);
+        this.$store.commit("setWorkInProcess", { work: "" });
       } catch (err) {
+        this.$store.commit("setWorkInProcess", { work: "" });
         Toast.fire({
           icon: "error",
           title: "無法更新餐廳類別，稍後再嘗試",
